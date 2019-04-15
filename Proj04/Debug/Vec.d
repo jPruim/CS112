@@ -1,0 +1,1 @@
+Vec.o: ../Vec.cpp

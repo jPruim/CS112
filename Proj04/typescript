@@ -1,0 +1,2366 @@
+Script started on Mon 09 Oct 2017 07:39:09 PM EDT
+jrp27@leibniz:~/CS112/Proj04$ ls
+Application.cpp  Matrix.cpp	       MatrixTester.h	 vecTest1Copy.txt
+Application.h	 Matrix.h	       tester.cpp	 vecTest1.txt
+Debug		 MatrixTest1Copy2.txt  typescript	 vecTest2Copy.txt
+DifDim.txt	 MatrixTest1Copy.txt   Vec.cpp		 vecTest2.txt
+Mat1.txt	 MatrixTest1.txt       Vec.h		 VecTester.cpp
+Mat2.txt	 MatrixTester.cpp      vecStreamOut.txt  VecTester.h
+jrp27@leibniz:~/CS112/Proj04$ cat Application.cpp
+/*
+ * Application.cpp
+ *
+ *  Created on: Oct 4, 2017
+ *      Author: jrp27
+ */
+
+#include "Application.h"
+#include "VecTester.h"
+#include <iostream>     // cout, cerr, ...
+#include <fstream>      // ifstream, ofstream, ...
+#include <cassert>      // assert()
+#include <cstdlib>      // exit()
+#include <stdexcept>    // range_error, ...
+using namespace std;
+/* Default Constructor
+ * goal: to set default values for wantRun,
+ * has new lines to "clear terminal"
+ */
+Application::Application(){
+	cout<<"\n\n\n\n\n\n\n\n\n\n"<<endl;
+	cout<<"Welcome to Matrix Operations!"<<endl;
+	wantRun = true;
+}
+/* runApplication
+ * goal:to call other methods in sequence to make an application through terminal
+ */
+void Application::runApplication(){
+	wantRun = true;
+	while(wantRun){
+		makeMenu();
+	}
+}
+/* quit
+ * goal:exit application after printing an ending message to console
+ */
+void Application::quit(){
+	cout<< "Thanks for using Matrix Operations"<<endl;
+	wantRun = false;
+}
+/* printMat
+ * @param:const Matrix<double>& m
+ * return:
+ * goal: to print Matrix in standard format
+ */
+void Application::printMat(const Matrix<double>& m)const{
+	m.writeTo(cout);
+}
+/* makeMenu
+ * @param:
+ * return:
+ * goal:to cout a menu message wait for response
+ */
+void Application::makeMenu(){
+
+	cout<<"Do you wish to:"<<endl;
+	cout<<"\t 1: add Matrices"<<endl;
+	cout<<"\t 2: subtract Matrices"<<endl;
+	cout<<"\t 3: transpose a Matrix"<<endl;
+	cout<<"\t q: quit Matrix Operations"<<endl;
+	char response;
+	cin>> response;
+	if (response == '1'){
+		requestedAdd();
+	}else if(response == '2'){
+		this->requestedSub();
+	}else if (response == '3'){
+		this->requestedTrans();
+	}else if (response == 'q'){
+		this->quit();
+	}else{
+		cout<< "Invalid response"<<endl;
+		makeMenu();
+	}
+}
+/* check File
+ * @param: const string& response
+ * return:
+ * goal:to throw range_error if file can't be opened
+ */
+void Application::checkFile(const string& response) const {
+	ifstream file(response.c_str());
+	if(file.is_open()){
+		file.close();
+	}else{
+		throw range_error("Invalid file, did you include .txt?");
+	}
+
+}
+/* requestedAdd
+ * @param:
+ * return:
+ * goal:use console to request file names and add the matrices that are held in the files.
+ * prints result to console
+ */
+void Application::requestedAdd()const{
+	string response, response2, stall;
+	Matrix<double> m1, m2, m3;
+	cout<<"What file is your first Matrix in?"<<endl;
+	cin>>response;
+	try{
+		checkFile(response);
+	}catch(range_error& re){
+		cout<<re.what()<<endl;
+		return;
+	}
+	m1.readFrom(response);
+	cout<<"What file is your second Matrix in?"<<endl;
+	cin>>response2;
+	try{
+		checkFile(response2);
+	}catch(range_error& re){
+		cout<<re.what()<<endl;
+		return;
+	}
+	m2.readFrom(response2);
+	try{
+		m3 = m1 + m2;
+	}catch (invalid_argument& err){
+		cout<<err.what()<<endl;
+		return;
+	}
+	cout<<"Your sum is:"<<endl;
+	printMat(m3);
+	cout<<"type anything to return to Menu"<<endl;
+	cin>>stall;
+}
+/* requestedSub
+ * @param:
+ * return:
+ * goal:use console to request file names and subtract the matrices that are held in the files.
+ * prints result to console
+ */
+void Application::requestedSub()const{
+	string response, response2, stall;
+	Matrix<double> m1, m2, m3;
+	cout<<"What file is your first Matrix in?"<<endl;
+	cin>>response;
+	try{
+		checkFile(response);
+	}catch(range_error& re){
+		cout<<re.what()<<endl;
+		return;
+	}
+	m1.readFrom(response);
+	cout<<"What file is your second Matrix in?"<<endl;
+	cin>>response2;
+	try{
+		checkFile(response2);
+	}catch(range_error& re){
+		cout<<re.what()<<endl;
+		return;
+	}
+	m2.readFrom(response2);
+	try{
+		m3 = m1 - m2;
+	}catch (invalid_argument& err){
+		cout<<err.what()<<endl;
+		return;
+	}
+	cout<<"Your Difference is:"<<endl;
+	printMat(m3);
+	cout<<"type anything to return to Menu"<<endl;
+	cin>>stall;
+}
+/* requestedTrans
+ * @param:
+ * return:
+ * goal:use console to request a file name and transpose the Matrix held within
+ * prints result to console
+ */
+void Application::requestedTrans()const{
+	string response, stall;
+	cout<<"What file is your Matrix in?"<<endl;
+	cin>>response;
+	try{
+		checkFile(response);
+	}catch(range_error& re){
+		cout<<re.what()<<endl;
+		return;
+	}
+	Matrix<double> m1, m2;
+	m1.readFrom(response);
+	m2 = m1.getTranspose();
+	cout<<"Your transposed Matrix is:"<<endl;
+	printMat(m2);
+	cout<<"type anything to return to Menu"<<endl;
+	cin>>stall;
+}
+jrp27@leibniz:~/CS112/Proj04$ cat Application.h
+/*
+ * Application.h
+ *
+ *  Created on: Oct 4, 2017
+ *      Author: jrp27
+ */
+
+#ifndef APPLICATION_H_
+#define APPLICATION_H_
+#include "VecTester.h"
+#include "Matrix.h"
+
+
+class Application {
+public:
+	Application();
+	void runApplication();
+
+
+private:
+	bool wantRun;
+	void makeMenu();
+	void quit();
+	void printMat(const Matrix<double>& m) const;
+	void requestedAdd() const;
+	void requestedSub()const;
+	void requestedTrans()const;
+	void checkFile(const std::__cxx11::string& response) const;
+};
+
+#endif /* APPLICATION_H_ */
+jrp27@leibniz:~/CS112/Proj04$ cat MatrixTest.cpp        .cpp
+/* Matrix.cpp defines Matrix class methods.
+ * Student Name:
+ * Date:
+ * Begun by: Joel Adams, for CS 112 at Calvin College.
+ */
+
+#include "Matrix.h"
+#include <fstream>
+
+
+jrp27@leibniz:~/CS112/Proj04$ cat Matrix.h
+/* Matrix.h provides a class for manipulating 2-dimensional vectors.
+ * Student Name:Jason Pruim
+ * Date: Oct 4, 2017
+ * Begun by: Joel Adams, for CS 112 at Calvin College.
+ */
+
+#ifndef MATRIX_H_
+#define MATRIX_H_
+
+#include <iostream>
+#include "Vec.h"
+
+
+using namespace std;
+template<class Item>
+class Matrix {
+public:
+	Matrix();
+	Matrix(unsigned rows, unsigned columns);
+	unsigned getRows() const;
+	unsigned getColumns()const;
+	Vec<Item>& operator[](unsigned index);
+	const Vec<Item>& operator[](unsigned index) const;
+	bool operator==(const Matrix& m2) const;
+	bool operator!=(const Matrix& m2) const;
+	void readFrom(istream& fin);
+	void writeTo(string fileName) const;
+	void readFrom(string fileName);
+	void writeTo(ostream& fout)const;
+	Matrix operator+(const Matrix& m2) const;
+	Matrix operator-(const Matrix& m2) const;
+	Matrix getTranspose();
+
+private:
+	unsigned myRows;
+	unsigned myColumns;
+	Vec< Vec<Item> > myVec;
+	typedef Item myItem;
+	friend class MatrixTester;
+
+
+};
+
+
+
+template<class Item>
+Matrix<Item>::Matrix() {
+	myRows = myColumns = 0;
+}
+template<class Item>
+Matrix<Item>::Matrix(unsigned rows, unsigned columns) {
+	myRows = rows;
+	myColumns = columns;
+	myVec.setSize(rows);
+	for (unsigned i = 0; i < rows; i++) {
+		myVec[i].setSize(columns);
+	}
+}
+template<class Item>
+unsigned Matrix<Item>::getRows() const{
+	return myRows;
+}
+template<class Item>
+unsigned Matrix<Item>::getColumns() const{
+	return myColumns;
+}
+template<class Item>
+Vec<Item>& Matrix<Item>::operator[](unsigned index){
+	return myVec[index];
+}
+template<class Item>
+const Vec<Item>& Matrix<Item>::operator[](unsigned index)const{
+	if(index >=myRows){
+		throw range_error("Index not in Matrix");
+	}
+	return myVec[index];
+}
+template<class Item>
+bool Matrix<Item>::operator==(const Matrix<Item>& m2) const {
+     if ( myRows != m2.getRows() || myColumns != m2.getColumns() ) {
+          return false;
+     } else {
+          return myVec == m2.myVec;
+     }
+}
+/* operator !=
+ * @param: const Matrix& m2
+ * return:
+ * goal: to return true if the matrices are the same
+ */
+template<class Item>
+bool Matrix<Item>::operator!=(const Matrix<Item>& m2) const {
+	if(myVec!= m2.myVec){
+		return true;
+	}
+	return false;
+}
+/* readFrom (istream)
+ * @param: istream& fin
+ * return:
+ * goal: to make matrix from file with tab separated values, assumes correct dimensions
+ */
+template<class Item>
+void Matrix<Item>::readFrom(istream& fin){
+	for(unsigned i = 0; i < myRows; i++){
+		for(unsigned j = 0; j < myColumns; j++){
+			fin>>myVec[i][j];
+		}
+	}
+}
+/* readFrom (fileName)
+ * @param: string fileName
+ * return:
+ * goal: to make matrix from file with tab separated values, reads in dimensions
+ */
+template<class Item>
+void Matrix<Item>::readFrom(string fileName){
+	ifstream fin(fileName.c_str());
+	for (unsigned i = 0; i < myRows; i++) {
+		delete [] &(myVec[i]);
+	}
+	fin>>myRows;
+	fin>>myColumns;
+	myVec.setSize(myRows);
+	for (unsigned i = 0; i < myRows; i++) {
+		myVec[i].setSize(myColumns);
+	}
+	this->readFrom(fin);
+	fin.seekg(0, ios:: beg);
+	fin.close();
+
+}
+/* writeTo(ostream) const
+ * @param: ostream& fout
+ * return:
+ * goal: to write values of Matrix without number of columns or number of rows
+ */
+template<class Item>
+void Matrix<Item>::writeTo(ostream& fout)const {
+	for(unsigned i = 0; i < myRows; i++){
+		for(unsigned j = 0; j < myColumns; j++){
+			fout<<myVec[i][j];
+			if (j!=myColumns-1){
+				fout<<'\t';
+			}else{
+				fout<<endl;
+			}
+		}
+	}
+}
+/* writeTo(fileName)
+ * @param: const string& fileName
+ * return:
+ * goal: to write values of Matrix with number of columns and number of rows
+ */
+template<class Item>
+void Matrix<Item>::writeTo( string fileName) const{
+	ofstream fout(fileName.c_str());
+	assert(fout.is_open());
+	fout<<myRows<<endl;;
+	fout<<myColumns<<endl;
+	this->writeTo(fout);
+	fout.close();
+}
+/* operator+
+ * @param: const Matrix& m2
+ * return:
+ * goal: to return a matrix that is the sum of this and m2,
+ * throws range errors if the matrices don't have the same dimensions
+ */
+template<class Item>
+Matrix<Item> Matrix<Item>::operator+(const Matrix<Item>& m2) const{
+	if(myRows != m2.myRows){
+		throw invalid_argument("Different sized Matrices");
+	}
+	if(myColumns != m2.myColumns){
+		throw invalid_argument("Different sized Matrices");
+	}
+	Matrix result(myRows, myColumns);
+	for (unsigned i = 0; i< myRows; i++){
+		result.myVec[i] = myVec[i]+m2.myVec[i];
+	}
+	return (result);
+}
+/* operator-
+ * @param: const Matrix& m2
+ * return:Matrix
+ * goal: to return a matrix that is the difference of this and m2,
+ * throws range errors if the matrices don't have the same dimensions
+ */
+template<class Item>
+Matrix<Item> Matrix<Item>::operator-(const Matrix<Item>& m2) const{
+	if(myRows != m2.myRows){
+		throw invalid_argument("Different sized Matrices");
+	}
+	if(myColumns != m2.myColumns){
+		throw invalid_argument("Different sized Matrices");
+	}
+	Matrix<Item> result(myRows, myColumns);
+	for (unsigned i = 0; i< myRows; i++){
+		result.myVec[i] = myVec[i] - m2.myVec[i];
+	}
+	return (result);
+}
+/* getTranspose
+ * @param:
+ * return:Matrix
+ * goal: to return a matrix that is the difference of this and m2,
+ * throws range errors if the matrices don't have the same dimensions
+ */
+template<class Item>
+Matrix<Item> Matrix<Item>::getTranspose(){
+	Matrix tranMat(myColumns, myRows);
+//	Vec<Vec< Item> > tranMat;
+//	tranMat.setSize(myColumns);
+//	for (unsigned i = 0; i< myColumns; i++){
+//		tranMat[i].setSize(myRows);
+//	}
+	for (unsigned i = 0; i<myRows; i++){
+		for (unsigned j = 0; j < myColumns; j++){
+			tranMat[j][i] = myVec[i][j];
+		}
+	}
+	return tranMat;
+}
+#endif
+
+jrp27@leibniz:~/CS112/Proj04$ cat MatrixTest. er.cpp
+/* MatrixTester.cpp defines test-methods for class Matrix.
+ * Joel Adams, for CS 112 at Calvin College.
+ */
+ 
+#include "MatrixTester.h"
+#include <iostream>        // cout, cerr, ...
+#include <cstdlib>         // exit()
+#include <stdexcept>       // range_error, ...
+using namespace std;
+
+void MatrixTester::runTests() {
+	cout << "Running Matrix tests..." << endl;
+	testDefaultConstructor();
+	testExplicitConstructor();
+	testCopyConstructor();
+	testAssignment();
+	testEquality();
+	testSubscripts();
+	testInequality();
+	testTranspose();
+	testAddition();
+	testSubtraction();
+//	testMultiply();
+	testReadFromStream();
+	testWriteToStream();
+	testReadFromFile();
+	testWriteToFile();
+	cout << "All tests passed!" << endl;
+}
+
+
+void MatrixTester::testDefaultConstructor() {
+	cout << "Testing default constructor..." << flush;
+	Matrix<double> m1;
+	assert( m1.getRows() == 0 );
+	assert( m1.getColumns() == 0 );
+	cout << " 0 " << flush;
+
+	Matrix<double> m2;
+	assert( m2.getRows() == 0 );
+	assert( m2.getColumns() == 0 );
+	cout << " 1 " << flush;
+
+	cout << "Passed!" << endl;
+}
+
+void MatrixTester::testExplicitConstructor() {
+	cout << "Testing explicit constructor..." << flush;
+	Matrix<double> m1(2, 3);
+	assert( m1.getRows() == 2 );
+	assert( m1.getColumns() == 3 );
+	for (unsigned i = 0; i < m1.getRows(); i++) {
+		for (unsigned j = 0; j < m1.getColumns(); j++) {
+			assert( m1.myVec[i][j] == 0 );
+		}
+	}
+	cout << " 1 " << flush;
+
+	Matrix<double> m2(3, 1);
+	assert( m2.getRows() == 3 );
+	assert( m2.getColumns() == 1 );
+	for (unsigned i = 0; i < m2.getRows(); i++) {
+		for (unsigned j = 0; j < m2.getColumns(); j++) {
+			assert( m2.myVec[i][j] == 0 );
+		}
+	}
+	cout << " 2 " << flush;
+
+	cout << "Passed!" << endl;
+}
+
+void MatrixTester::testCopyConstructor() {
+	cout << "Testing copy constructor... " << flush;
+	// copy empty matrix
+	Matrix<double> m1;
+	Matrix<double> m2(m1);
+	assert( m2.getRows() == 0 );
+	assert( m2.getColumns() == 0 );
+	assert( m2.myVec.getSize() == 0 );
+	cout << " 1 " << flush;
+
+	// copy non-empty matrix
+	Matrix<double> m3(2, 3);
+	for (unsigned i = 0; i < m3.getRows(); i++) {
+		for (unsigned j = 0; j < m3.getColumns(); j++) {
+			m3.myVec[i][j] = i+j;
+		}
+	}
+	Matrix<double> m4(m3);
+	assert( m4.getRows() == m3.getRows() );
+	assert( m4.getColumns() == m3.getColumns() );
+	assert( m4.myVec.getSize() == m3.myVec.getSize() );
+	for (unsigned i = 0; i < m3.getRows(); i++) {
+		for (unsigned j = 0; j < m3.getColumns(); j++) {
+			assert( m4.myVec[i][j] == i+j );
+		}
+	}
+	cout << " 2 " << flush;
+
+	cout << " Passed!" << endl;
+}
+
+void MatrixTester::testAssignment() {
+	cout << "Testing =... " << flush;
+	// empty to empty
+	Matrix<double> m0;
+	Matrix<double> m1;
+	m0 = m1;
+	assert( m0.getRows() == 0 );
+	assert( m0.getColumns() == 0 );
+	assert( m0.myVec.getSize() == 0 );
+	cout << " 0 " << flush;
+
+	// nonempty to empty
+	Matrix<double> m2(2,3);
+	m0 = m2;
+	assert( m0.getRows() == 2 );
+	assert( m0.getColumns() == 3 );
+	assert( m0.myVec == m2.myVec );
+	cout << " 1 " << flush;
+
+	// empty to nonempty
+	m2 = m1;
+	assert( m2.getRows() == 0 );
+	assert( m2.getColumns() == 0 );
+	assert( m2.myVec == m1.myVec );
+	cout << " 2 " << flush;
+
+	// non-empty to non-empty
+	Matrix<double> m3(2, 3);
+	for (unsigned i = 0; i < m3.getRows(); i++) {
+		for (unsigned j = 0; j < m3.getColumns(); j++) {
+			m3[i][j] = i+j;
+		}
+	}
+	Matrix<double> m4(5, 4);
+	m4 = m3;
+	assert( m4.getRows() == 2 );
+	assert( m4.getColumns() == 3 );
+	assert( m4.myVec == m3.myVec );
+	cout << " 3 " << flush;
+
+	// chaining
+	Matrix<double> m5;
+	m5 = m0 = m4;
+	assert( m0.getRows() == 2 );
+	assert( m0.getColumns() == 3 );
+	assert( m0.myVec == m4.myVec );
+	assert( m5.getRows() == 2 );
+	assert( m5.getColumns() == 3 );
+	assert( m5.myVec == m0.myVec );
+	cout << " 4 " << flush;
+
+	// self-assignment
+	m5 = m5;
+	assert( m5.getRows() == 2 );
+	assert( m5.getColumns() == 3 );
+	for (unsigned i = 0; i < m5.getRows(); i++) {
+		for (unsigned j = 0; j < m5.getColumns(); j++) {
+			assert( m5[i][j] == i+j );
+		}
+	}
+	cout << " 5 " << flush;
+
+	cout << "Passed!" << endl;
+}
+
+void MatrixTester::testEquality() {
+	cout << "Testing ==... " << flush;
+	// empty
+	Matrix<double> m1;
+	Matrix<double> m2;
+	assert( m1 == m2 );
+	cout << " 1 " << flush;
+
+	// same sized
+	Matrix<double> m3(2, 3);
+	Matrix<double> m4a(2, 3);
+	Matrix<double> m4b(2, 3);
+	Matrix<double> m5(2, 3);
+	for (unsigned i = 0; i < m3.getRows(); i++) {
+		for (unsigned j = 0; j < m3.getColumns(); j++) {
+			m3[i][j] = i+j;
+			m4a[i][j] = i+j;
+			m4b[i][j] = i+j;
+			m5[i][j] = i*j;
+		}
+	}
+	assert( m3 == m4a );
+	assert( !(m1 == m3) );
+	assert( !(m3 == m5) );
+	m4b[1][1] = 0;
+	assert( !(m3 == m4b) );
+	cout << " 2 " << flush;
+
+	// different row sizes
+	Matrix<double> m6(3,3);
+	Matrix<double> m7(2,3);
+	assert( !(m6 == m7) );
+	cout << " 3 " << flush;
+
+	// same row sizes, different column sizes
+	Matrix<double> m8(2,4);
+	assert( !(m8 == m7 ) );
+	cout << " 4 " << flush;
+
+	cout << "Passed!" << endl;
+}
+
+void MatrixTester::testReadSubscript(const Matrix<double>& mat) {
+	for (unsigned i = 0; i < mat.getRows(); i++) {
+		for (unsigned j = 0; j < mat.getColumns(); j++) {
+			assert( i*j == mat[i][j] );
+		}
+	}
+}
+
+void MatrixTester::testSubscripts() {
+	cout << "Testing subscripts... " << flush;
+	Matrix<double> m(4, 3);
+	// test write-subscript
+	for (unsigned i = 0; i < m.getRows(); i++) {
+		for (unsigned j = 0; j < m.getColumns(); j++) {
+			m[i][j] = i*j;
+		}
+	}
+	cout << " 1 " << flush;
+
+	// test read-subscript -- see above
+	testReadSubscript(m);
+	cout << " 2 " << flush;
+
+	// exceptions
+	// empty Matrix
+	Matrix<double> m0;
+
+	// read subscript
+	try {
+		m0[0][0];
+		cerr << "successfully read from empty Matrix";
+		exit(1);
+	} catch (range_error&) {
+		cout << " 3 " << flush;
+ 	}
+
+	// write subscript
+	try {
+		m0[0][0] = 0;
+		cerr << "successfully wrote to empty Matrix";
+		exit(1);
+	} catch (range_error&) {
+		cout << " 4 " << flush;
+ 	}
+
+	// nonempty Matrix
+	Matrix<double> m2(2,3);
+
+	// beyond last row
+	try {
+		m2[2][0] = 0;
+		cerr << "successfully wrote past last Matrix row";
+		exit(1);
+	} catch (range_error&) {
+		cout << " 5 " << flush;
+ 	}
+
+	// beyond last column
+	try {
+		m2[0][3] = 0;
+		cerr << "successfully wrote past last Matrix column";
+		exit(1);
+	} catch (range_error&) {
+		cout << " 6 " << flush;
+ 	}
+
+	cout << "Passed!" << endl;
+}
+
+
+void MatrixTester::testInequality() {
+	cout << "Testing !=... " << flush;
+
+	// empty
+	Matrix<double> m1;
+	Matrix<double> m2;
+	assert( !(m1 != m2) );
+	cout << " 0 " << flush;
+
+	// nonempty, same size
+	Matrix<double> m3(2, 3);
+	Matrix<double> m4(2, 3);
+	Matrix<double> m5(2, 3);
+	for (unsigned i = 0; i < m3.getRows(); i++) {
+		for (unsigned j = 0; j < m3.getColumns(); j++) {
+			m3[i][j] = i+j;
+			m4[i][j] = i+j;
+			m5[i][j] = i*j;
+		}
+	}
+	assert( !(m3 != m4) );
+	assert( m1 != m3 );
+	assert( m3 != m5 );
+	cout << " 1 " << flush;
+
+	// nonempty, different row sizes
+	Matrix<double> m6(3,3);
+	for (unsigned i = 0; i < m6.getRows(); i++) {
+		for (unsigned j = 0; j < m6.getColumns(); j++) {
+			m6[i][j] = i+j;
+		}
+	}
+	assert( m3 != m6 );
+	cout << " 2 " << flush;
+
+	// nonempty, different column sizes
+	Matrix<double> m7(2, 4);
+	for (unsigned i = 0; i < m7.getRows(); i++) {
+		for (unsigned j = 0; j < m7.getColumns(); j++) {
+			m7[i][j] = i+j;
+		}
+	}
+	assert( m3 != m7 );
+	cout << " 3 " << flush;
+
+	cout << "Passed!" << endl;
+}
+
+void MatrixTester::testTranspose() {
+	cout << "Testing getTranspose()... " << flush;
+	// empty
+	Matrix<double> m0a, m0b(2,3);
+	m0b = m0a.getTranspose();
+	assert( m0b.getRows() == 0 );
+	assert( m0b.getColumns() == 0 );
+	assert( m0b.myVec.getSize() == 0 );
+	cout << " 0 " << flush;
+
+	// nonempty
+	Matrix<double> m1(4, 3);
+	for (unsigned i = 0; i < m1.getRows(); i++) {
+		for (unsigned j = 0; j < m1.getColumns(); j++) {
+			m1[i][j] = i*j;
+		}
+	}
+	Matrix<double> m2 = m1.getTranspose();
+	assert( m2.getRows() == m1.getColumns() );
+	assert( m2.getColumns() == m1.getRows() );
+	for (unsigned i = 0; i < m1.getRows(); i++) {
+		for (unsigned j = 0; j < m1.getColumns(); j++) {
+			assert( m2[j][i] == m1[i][j] );
+		}
+	}
+	cout << " 1a " << flush;
+	// check that m1 is unchanged
+	for (unsigned i = 0; i < m1.getRows(); i++) {
+		for (unsigned j = 0; j < m1.getColumns(); j++) {
+			assert( m1[i][j] == i*j );
+		}
+	}
+	cout << " 1b " << flush;
+
+	cout << "Passed!" << endl;
+}
+
+void MatrixTester::testAddition() {
+	cout << "Testing +... " << flush;
+	// empty
+	Matrix<double> m0a, m0b, m0c(3,2);
+	m0c = m0a + m0b;
+	assert( m0c.getRows() == 0 );
+	assert( m0c.getColumns() == 0 );
+	assert( m0c.myVec.getSize() == 0 );
+	cout << " 0 " << flush;
+
+	// nonempty, same size
+	Matrix<double> m1(3, 4);
+	Matrix<double> m2(3, 4);
+	for (unsigned i = 0; i < m1.getRows(); i++) {
+		for (unsigned j = 0; j < m1.getColumns(); j++) {
+			m1[i][j] = i*j;
+			m2[i][j] = i+j;
+		}
+	}
+
+	Matrix<double> m3 = m1 + m2;
+
+	for (unsigned i = 0; i < m1.getRows(); i++) {
+		for (unsigned j = 0; j < m1.getColumns(); j++) {
+			assert( m3[i][j] == i*j + i+j );
+		}
+	}
+	cout << " 1a " << flush;
+
+	// check that left operand did not change
+	for (unsigned i = 0; i < m1.getRows(); i++) {
+		for (unsigned j = 0; j < m1.getColumns(); j++) {
+			assert( m1[i][j] == i*j );
+		}
+	}
+	cout << " 1b " << flush;
+
+	// nonempty, different sized rows
+	Matrix<double> m4(4,4);
+	try {
+		m3 = m2 + m4;
+		cerr << "operator+ worked with different row sizes";
+		exit(1);
+	} catch (invalid_argument&) {
+		cout << " 2 " << flush;
+	}
+
+	// nonempty, different sized columns
+	Matrix<double> m5(3,3);
+	try {
+		m3 = m2 + m5;
+		cerr << "operator+ worked with different column	sizes";
+		exit(1);
+	} catch (invalid_argument&) {
+		cout << " 3 " << flush;
+	}
+
+	cout << "Passed!" << endl;
+}
+
+void MatrixTester::testSubtraction() {
+	cout << "Testing -... " << flush;
+	// empty
+	Matrix<double> m0a, m0b, m0c(3,2);
+	m0c = m0a - m0b;
+	assert( m0c.getRows() == 0 );
+	assert( m0c.getColumns() == 0 );
+	assert( m0c.myVec.getSize() == 0 );
+	cout << " 0 " << flush;
+
+	//non-empty, valid
+	Matrix<double> m1(3, 4);
+	Matrix<double> m2(3, 4);
+	for (unsigned i = 0; i < m1.getRows(); i++) {
+		for (unsigned j = 0; j < m1.getColumns(); j++) {
+			m1[i][j] = i*j;
+			m2[i][j] = i+j;
+		}
+	}
+
+	Matrix<double> m3 = m1 - m2;
+	for (unsigned i = 0; i < m1.getRows(); i++) {
+		for (unsigned j = 0; j < m1.getColumns(); j++) {
+			assert( m3[i][j] == m1[i][j] - m2[i][j] );
+		}
+	}
+	cout << " 1a " << flush;
+
+	// check that left operand did not change
+	for (unsigned i = 0; i < m1.getRows(); i++) {
+		for (unsigned j = 0; j < m1.getColumns(); j++) {
+			assert( m1[i][j] == i*j );
+		}
+	}
+	cout << " 1b " << flush;
+
+	// nonempty, different sized rows
+	Matrix<double> m4(4,4);
+	try {
+		m3 = m2 - m4;
+		cerr << "operator- worked with different row sizes";
+		exit(1);
+	} catch (invalid_argument&) {
+		cout << " 2 " << flush;
+	}
+
+	// nonempty, different sized columns
+	Matrix<double> m5(3,3);
+	try {
+		m3 = m2 - m5;
+		cerr << "operator- worked with different column	sizes";
+		exit(1);
+	} catch (invalid_argument&) {
+		cout << " 3 " << flush;
+	}
+
+	cout << "Passed!" << endl;
+}
+
+//void MatrixTester::testMultiply() {
+//	cout << "Testing *..." << flush;
+//	// empty
+//	Matrix m0a, m0b, m0c(3,2);
+//	m0c = m0a * m0b;
+//	assert( m0c.getRows() == 0 );
+//	assert( m0c.getColumns() == 0 );
+//	assert( m0c.myVec.getSize() == 0 );
+//	cout << " 0 " << flush;
+//
+//	Matrix m1(2, 3);
+//	Matrix m2(3, 2);
+//	for (unsigned i = 0; i < m1.getRows(); i++) {
+//		for (unsigned j = 0; j < m1.getColumns(); j++) {
+//			m1[i][j] = i+j+1;
+//			m2[j][i] = i+j+1;
+//		}
+//	}
+//	
+//	Matrix m3 = m1 * m2;
+//	assert( m3.getRows() == 2);
+//	assert( m3.getColumns() == 2 );
+//	assert( m3[0][0] == 14 );
+//	assert( m3[0][1] == 20 );
+//	assert( m3[1][0] == 20 );
+//	assert( m3[1][1] == 29 );
+//	cout << " 1a " << flush;
+//	
+//	// check that left operand did not change
+//	for (unsigned i = 0; i < m1.getRows(); i++) {
+//		for (unsigned j = 0; j < m1.getColumns(); j++) {
+//			assert( m1[i][j] == i+j+1 );
+//		}
+//	}
+//	cout << " 1b " << flush;
+//
+//	// nonempty, m1.columns != m2.rows
+//	Matrix m4(3,3);
+//	try {
+//		m3 = m2 * m4;
+//		cerr << "operator* worked with bad row/column sizes";
+//		exit(1);
+//	} catch (invalid_argument&) {
+//		cout << " 2 " << flush;
+//	}
+//
+//	cout << "Passed!" << endl;
+//}
+//
+void MatrixTester::testReadFromStream() {
+	cout << "Testing readFrom(istream)... " << flush;
+	ifstream fin("MatrixTest1.txt");
+	assert( fin.is_open() );
+	unsigned rows, columns;
+	fin >> rows >> columns;
+	Matrix<double> m(rows, columns);
+	m.readFrom(fin);
+	for (unsigned i = 0; i < rows; i++) {
+		for (unsigned j = 0; j < columns; j++) {
+			assert( m[i][j] == i*m.getColumns()+j+1 );
+		}
+	}
+
+	cout << "Passed!" << endl;
+}
+
+void MatrixTester::testReadFromFile() {
+	cout << "Testing readFrom(string)... " << flush;
+	Matrix<double> m;
+	m.readFrom("MatrixTest1.txt");
+	assert( m.getRows() == 3 );
+	assert( m.getColumns() == 4 );
+	for (unsigned i = 0; i < m.getRows(); i++) {
+		for (unsigned j = 0; j < m.getColumns(); j++) {
+			assert( m[i][j] == i*m.getColumns()+j+1 );
+		}
+	}
+
+	cout << "Passed!" << endl;
+}
+
+void MatrixTester::testWriteToStream() {
+	cout << "Testing writeTo(ostream)... " << flush;
+	Matrix<double> m;
+	// read a Matrix whose values we know
+	m.readFrom("MatrixTest1.txt");
+	ofstream fout("MatrixTest1Copy.txt");
+	assert( fout.is_open() );
+	// now write it to a file via a stream
+	fout << m.getRows() << " " << m.getColumns() << "\n";
+	m.writeTo(fout);
+	fout.close();
+	// now, read what we just wrote into a different Matrix
+	Matrix<double> m1;
+	m1.readFrom("MatrixTest1Copy.txt");
+	// and test it
+	assert( m1.getRows() == 3 );
+	assert( m1.getColumns() == 4 );
+	for (unsigned i = 0; i < m.getRows(); i++) {
+		for (unsigned j = 0; j < m.getColumns(); j++) {
+			assert( m1[i][j] == i*m.getColumns()+j+1 );
+		}
+	}
+
+	cout << "Passed!" << endl;
+}
+
+void MatrixTester::testWriteToFile() {
+	cout << "Testing writeTo(string)... " << flush;
+	Matrix<double> m;
+	// read in a Matrix whose values we know
+	m.readFrom("MatrixTest1.txt");
+	// write it to a file
+	m.writeTo("MatrixTest1Copy2.txt");
+	// now, read what we just wrote into a different Matrix
+	Matrix<double> m1;
+	m1.readFrom("MatrixTest1Copy2.txt");
+	// test it
+	assert( m1.getRows() == 3 );
+	assert( m1.getColumns() == 4 );
+	for (unsigned i = 0; i < m.getRows(); i++) {
+		for (unsigned j = 0; j < m.getColumns(); j++) {
+			assert( m1[i][j] == i*m.getColumns()+j+1 );
+		}
+	}
+
+	cout << "Passed!" << endl;
+}
+
+jrp27@leibniz:~/CS112/Proj04$ cat MatrixTEst   ester.h 
+/* MatrixTester.h declares test-methods for class Matrix.
+ * Joel C. Adams, for CS 112 at Calvin College.
+ */
+ 
+#ifndef MATRIXTESTER_H_
+#define MATRIXTESTER_H_
+
+#include "Matrix.h"
+
+class MatrixTester {
+public:
+	void runTests();
+	void testDefaultConstructor();
+	void testExplicitConstructor();
+	void testCopyConstructor();
+	void testAssignment();
+	void testEquality();
+	void testInequality();
+	void testSubscripts();
+	void testReadSubscript(const Matrix<double>& mat);
+	void testTranspose();
+	void testAddition();
+	void testSubtraction();
+	void testMultiply();
+	void testReadFromStream();
+	void testReadFromFile();
+	void testWriteToStream();
+	void testWriteToFile();
+};
+
+#endif /*MATRIXTESTER_H_*/
+jrp27@leibniz:~/CS112/Proj04$ cat tester.cpp 
+/* tester.cpp drives the testing of our Vec template and Matrix class.
+ * Student: Jason Pruim
+ * Date: Oct 4, 2017
+ * Begun by: Joel C. Adams, for CS 112 at Calvin College.
+ */
+
+#include "VecTester.h"
+#include "MatrixTester.h"
+#include "Application.h"
+// #include "MatrixTester.h"
+
+int main() {
+//	VecTester vt;
+//	vt.runTests();
+	MatrixTester mt;
+	mt.runTests();
+	Application app;
+	app.runApplication();
+}
+jrp27@leibniz:~/CS112/Proj04$ cat Vec.cpp
+jrp27@leibniz:~/CS112/Proj04$ cat Vec.h
+/* Student Name: Jason Pruim and Casey Purtill
+ * Date: Sept 26, 2017
+ * Begun by: Joel C. Adams, for CS 112 at Calvin College.
+ */
+
+#ifndef VEC_H_
+#define VEC_H_
+
+#include <iostream>
+using namespace std;
+
+template<class Item>
+class Vec {
+public:
+	Vec();
+	Vec(unsigned size);
+	Vec(const Vec& original);
+	virtual ~Vec();
+	Vec& operator=(const Vec& original);
+	unsigned getSize() const;
+	void setItem(unsigned index, const Item& it);
+	Item getItem(unsigned index) const;
+	void setSize(unsigned newSize);
+	bool operator==(const Vec& v2)const;
+	bool operator!=(const Vec& v2)const;
+	void writeTo(ostream& out) const;
+	void readFrom(istream& in);
+	Item& operator[](unsigned index);
+	const Item& operator[](unsigned index)const;
+	void readFrom(string fileName);
+	void writeTo(string fileName) const;
+	Vec operator-(const Vec& v2) const;
+	Item operator*(const Vec& v2) const;
+	Vec operator+(const Vec& v2) const;
+
+
+private:
+   unsigned mySize;
+   Item *   myArray;
+
+	void makeCopyOf(const Vec& original);
+
+   friend class VecTester;
+};
+
+/* Vec.cpp defines the methods for Vec, a simple vector class.
+ * Student Name: Jason Pruim and Casey Purtill
+ * Date: Sept 26, 2017
+ * Begun by: Joel C. Adams, for CS 112 at Calvin College.
+ */
+
+#include "Vec.h"
+#include <stdexcept>
+#include <fstream>
+#include <cassert>
+template<class Item>
+Vec<Item>::Vec() {
+	mySize = 0;
+	myArray = NULL;
+}
+template<class Item>
+Vec<Item>::Vec(unsigned size){
+	mySize = size;
+	if(size > 0){
+		myArray = new Item[size]();
+//		cout<< myArray<<endl;
+//		cout << myArray[0]<<endl;
+//		for(unsigned i; i < size; ++i){
+//			myArray[i] = 0;
+//		}
+	}
+	else{
+		myArray = NULL;
+	}
+}
+template<class Item>
+void Vec<Item>::makeCopyOf(const Vec<Item>& original) {
+	mySize = original.mySize;
+	if (mySize > 0) {
+		myArray = new Item[mySize]();
+		for (unsigned i = 0; i < mySize; ++i) {
+			myArray[i] = original.myArray[i];
+			//			cout << myArray[i]<< flush;
+		}
+	} else {
+		myArray = NULL;
+	}
+}
+template<class Item>
+Vec<Item>::Vec(const Vec<Item>& original) {
+	makeCopyOf(original);
+}
+template<class Item>
+Vec<Item>::~Vec() {
+	delete [] myArray;
+	myArray = NULL;
+	mySize = 0;
+}
+template<class Item>
+Vec<Item>& Vec<Item>::operator=(const Vec<Item>& original) {
+	if (this != &(original)) {
+		delete[] myArray;
+		makeCopyOf(original);
+
+	}
+	return *this;
+}
+template<class Item>
+unsigned Vec<Item>::getSize() const{
+	return mySize;
+}
+template<class Item>
+void Vec<Item>::setItem(unsigned index, const Item& it){
+	if (mySize > index) {
+		myArray[index] = it;
+	}
+	else{
+		throw range_error("invalid index");
+	}
+}
+template<class Item>
+Item Vec<Item>::getItem(unsigned index) const{
+	if (mySize > index) {
+		return myArray[index];
+	}
+	else{
+		throw range_error("invalid index");
+	}
+}
+template<class Item>
+void Vec<Item>::setSize(unsigned newSize){
+//	Vec Temp(newSize);
+//	for(unsigned i =0; i< mySize && i < newSize; i++){
+//		Temp.myArray[i] = myArray[i];
+//	}
+//	*this = Temp;
+	if (newSize == mySize){
+		return;
+	}
+	if (newSize > 0) {
+		Item* tempArray = new Item[newSize]();
+		for (unsigned i = 0; i < mySize && i < newSize; i++) {
+			tempArray[i] = myArray[i];
+		}
+		delete[] myArray;
+		mySize = newSize;
+		myArray = tempArray;
+	}
+	else{
+		delete [] myArray;
+		myArray = NULL;
+		mySize = 0;
+	}
+}
+template<class Item>
+bool Vec<Item>::operator==(const Vec<Item>& v2) const {
+	if(mySize== v2.mySize){
+		for(unsigned i = 0; i< mySize; i++){
+			if (myArray[i] != v2.myArray[i]){
+				return false;
+			}
+		}
+		return true;
+	}
+	return false;
+}
+//
+template<class Item>
+void Vec<Item>::writeTo(ostream& out) const {
+	//out << mySize<<endl;
+	for(unsigned i = 0; i < mySize; i++){
+		out<< myArray[i]<<endl;
+	}
+}
+template<class Item>
+void Vec<Item>::readFrom(istream& in) {
+	//in >> mySize;
+	//delete[] myArray;
+	if (mySize > 0) {
+		for (unsigned i = 0; i < mySize; i++) {
+			in >> myArray[i];
+		}
+	} else {
+		myArray = NULL;
+	}
+}
+
+/* operator[]
+ * @param:unsigned index
+ * return: myArray[index]
+ * goal: work [] with assignment
+ */
+template<class Item>
+Item& Vec<Item>::operator[](unsigned index) {
+	if(index >=mySize){
+		//cout << "Error thrown \n\n\n\n\n"<<endl;
+		throw range_error("Index outside of Array");
+	}
+	//cout<<"First was called"<<endl;
+//	Item &Address = &(myArray[index]);
+	return myArray[index];
+}
+/* operator[] const
+ * @param:unsigned index
+ * return: myArray[index]
+ * goal: work [] with retrieval
+ */
+template<class Item>
+const Item& Vec<Item>::operator[](unsigned index)const{
+	if(index >=mySize){
+		//cout << "Other Error thrown \n\n\n\n\n "<<endl;
+		throw range_error("Index outside of Array");
+	}
+	//cout<<"Second was called"<<endl;
+	return myArray[index];
+}
+/* readFrom
+ * @param: string fileName
+ * return:
+ * goal: to change myArray based on inputs from a file
+ */
+template<class Item>
+void Vec<Item>::readFrom(string fileName){
+    ifstream fin(fileName.c_str());
+    assert( fin.is_open());
+    fin>>mySize;
+    delete[] myArray;
+    myArray = new Item[mySize];
+//    for(unsigned i = 0; i<mySize; i++){
+//    	fin>>myArray[i];
+//    }
+//    fin.close();
+    this->readFrom(fin);
+}
+/* writeTo
+ * @param: string fileName
+ * return:
+ * goal: to write myArray to a file with same format needed for readFrom
+ */
+template<class Item>
+void Vec<Item>::writeTo(string fileName) const{
+	ofstream fout(fileName.c_str());
+	assert(fout.is_open());
+	fout<<mySize<<endl;
+	this->writeTo(fout);
+	fout.close();
+}
+/* operator!=
+ * @param: const Vec& v2
+ * return: bool
+ * goal: to see if v2 and this are not the same
+ */
+template<class Item>
+bool Vec<Item>::operator!=(const Vec& v2) const{
+	bool a = *this==(v2);
+	return !a;
+}
+/* oeprator-
+ * @param: const Vec& v2
+ * return: Vec
+ * goal: to return a vector that is "this" minus v2
+ */
+template<class Item>
+Vec<Item> Vec<Item>::operator-(const Vec<Item>& v2) const{
+	if(this->getSize() != v2.getSize()){
+		throw invalid_argument("Different sized vectors");
+	}
+	Vec v7(mySize);
+	for (unsigned i = 0; i<mySize; i++){
+		v7.myArray[i] = this->myArray[i]-v2.myArray[i];
+	}
+	return (v7);
+}
+/* oeprator+
+ * @param: const Vec& v2
+ * return: Vec
+ * goal: to return a vector that is "this" plus v2
+ */
+template<class Item>
+Vec<Item> Vec<Item>::operator+(const Vec<Item>& v2) const{
+	if(this->getSize() != v2.getSize()){
+		throw invalid_argument("Different sized vectors");
+	}
+	Vec v7(mySize);
+	for (unsigned i = 0; i<mySize; i++){
+		v7.myArray[i] = this->myArray[i]+v2.myArray[i];
+	}
+	return (v7);
+}
+/* oeprator*
+ * @param: const Vec& v2
+ * return: Item
+ * goal: to return a vector that is "this" dot producted with v2
+ */
+template<class Item>
+Item Vec<Item>::operator*(const Vec<Item>& v2) const {
+	if (v2.getSize() != this->getSize()) {
+		throw invalid_argument("Arrays are not the same size");
+	}
+	Item dProd = 0;
+	if (mySize != 0) {
+		for (unsigned i = 0; i < this->getSize(); i++) {
+			dProd += this->myArray[i] * v2.myArray[i];
+		}
+	}
+	return dProd;
+}
+
+#endif /*VEC_H_*/
+jrp27@leibniz:~/CS112/Proj04$ cat VecTester.cpp
+/* VecTester.cpp defines the unit test-methods for Vec, a simple vector class.
+ * Student Name:
+ * Date:
+ * Begun by: Joel C. Adams, for CS 112 at Calvin College.
+ */
+ 
+#include "VecTester.h"
+#include <iostream>     // cout, cerr, ...
+#include <cassert>      // assert()
+#include <cstdlib>      // exit()
+#include <stdexcept>    // range_error, ...
+using namespace std;
+
+void VecTester::runTests() const {
+	cout << "Testing class Vec" << endl;
+	testDefaultConstructor();
+	testExplicitConstructor();
+	testCopyConstructor();
+	testDestructor();
+	testAssignment();
+	testSetSize();
+	testGetSize();
+	testSetItem();
+	testGetItem();
+	testEquality();
+	testWriteToStream();
+	testReadFromStream();
+	testInequality();
+	testAddition();
+	testSubtraction();
+	testDotProduct();
+	testReadFromFile();
+	testWriteToFile();
+	cout << "All tests passed!" << endl;
+}
+
+void VecTester::testDefaultConstructor() const {
+	cout << "Testing default constructor... " << flush;
+	Vec<double> v;
+	assert( v.mySize == 0 );
+	assert( v.myArray == NULL );
+	cout << "Passed!" << endl;
+}
+
+void VecTester::testExplicitConstructor() const {
+	cout << "Testing explicit constructor... " << flush;
+	cout << " 1 " << flush;
+	Vec<double> v1(3);
+	assert( v1.mySize == 3 );
+	assert( v1.myArray != NULL );
+	for (int i = 0; i < 3; i++) {
+		assert( v1.myArray[i] == 0 );
+	}
+	cout << " 2 " << flush;
+	Vec<double> v2(8);
+	assert( v2.mySize == 8 );
+	assert( v2.myArray != NULL );
+	for (int i = 0; i < 8; i++) {
+		assert( v2.myArray[i] == 0 );
+	}
+	cout << "Passed!" << endl;
+}
+
+void VecTester::testCopyConstructor() const {
+	cout << "Testing copy constructor..." << flush;
+	cout << " 1 " << flush;
+	Vec<double> v1;
+	Vec<double> v2(v1);
+	assert( v2.mySize == 0 );
+	assert( v2.myArray == NULL);
+
+	cout << " 2 " << flush;
+	Vec<double> v3(5);
+	Vec<double> v4(v3);
+	assert(v4.mySize == 5);
+	assert(v4.myArray != NULL);
+	assert(v4.myArray != v3.myArray);
+	for (unsigned i = 0; i < 5; i++) {
+		assert( v4.myArray[i] == 0 );
+	}
+
+	cout << " 3 " << flush;
+	Vec<double> v5(5);
+	for (unsigned i = 0; i < 5; i++) {
+		v5.myArray[i] = (i+1);
+	}
+	Vec<double> v6(v5);
+	assert( v6.mySize == 5 );
+	assert( v6.myArray != NULL );
+	assert( v6.myArray != v5.myArray );
+	for (unsigned i = 0; i < 5; i++) {
+		assert( v6.myArray[i] == v5.myArray[i] );
+	}
+	cout << "Passed!" << endl;
+}
+
+void VecTester::testDestructor() const {
+	cout << "Testing destructor... " << flush;
+	Vec<double> v(5);
+	v.~Vec();
+	assert( v.mySize == 0 );
+	assert( v.myArray == NULL );
+	cout << "Passed, but make sure ~Vec() is returning the array's memory to the system!" << endl;
+}
+
+void VecTester::testAssignment() const {
+	cout << "Testing =..." << flush;
+	// empty-to-empty
+	Vec<double> v, v0;
+	v = v0;
+	assert(v.mySize == 0);
+	assert(v.myArray == NULL);
+	cout << " 0 " << flush;
+	// empty-to-nonempty
+	Vec<double> v1;
+	Vec<double> v2(5);
+	v2 = v1;
+	assert(v2.mySize == 0);
+	assert(v2.myArray == NULL);
+	cout << " 1 " << flush;
+	// nonempty-to-empty
+	Vec<double> v3(5);
+	for (unsigned i = 0; i < 5; i++) {
+		v3.myArray[i] = (i+1);
+	}
+	Vec<double> v4;
+	v4 = v3;
+	assert( v4.mySize == 5 );
+	assert( v4.myArray != v3.myArray );
+	for (unsigned i = 0; i < 5; i++) {
+		assert( v4.myArray[i] == (i+1) );
+	}
+	cout << " 2 " << flush;
+	// nonempty-to-nonempty (larger into smaller)
+	Vec<double>  v5(2);
+	for (unsigned i = 0; i < 2; i++) {
+		v5.myArray[i] = (i+1)*10;
+	}
+	v5 = v3;
+	assert(v5.mySize == 5);
+	assert(v5.myArray != v3.myArray);
+	for (unsigned i = 0; i < 5; i++) {
+		assert( v5.myArray[i] == (i+1) );
+	}
+	cout << " 3 " << flush;
+	// nonempty-to-nonempty (smaller into larger)
+	Vec<double>  v6(7);
+	for (unsigned i = 0; i < 7; i++) {
+		v6.myArray[i] = (i+1)*10;
+	}
+	v6 = v3;
+	assert(v6.mySize == 5);
+	assert(v6.myArray != v3.myArray);
+	for (unsigned i = 0; i < 5; i++) {
+		assert( v6.myArray[i] == (i+1) );
+	}
+	cout << " 4 " << flush;
+	// nonempty-to-nonempty (equal sized)
+	Vec<double>  v7(5);
+	for (unsigned i = 0; i < 5; i++) {
+		v7.myArray[i] = (i+1)*10;
+	}
+	v7 = v3;
+	assert(v7.mySize == 5);
+	assert(v7.myArray != v3.myArray);
+	for (unsigned i = 0; i < 5; i++) {
+		assert( v7.myArray[i] == (i+1) );
+	}
+	cout << " 5 " << flush;
+	// assignment chaining
+	Vec<double>  v8;
+	Vec<double>  v9(4);
+	v9 = v8 = v3;
+	assert( v9.mySize == 5 );
+	assert( v9.mySize == 5 );
+	assert( v8.myArray != v3.myArray );
+	assert( v8.myArray != v3.myArray );
+	assert( v9.myArray != v8.myArray );
+	for (unsigned i = 0; i < 5; i++) {
+		assert( v8.myArray[i] == (i+1) );
+		assert( v9.myArray[i] == (i+1) );
+	}
+	cout << " 6 " << flush;
+	// self-assignment (idiotic but legal)
+	v3 = v3;
+	assert( v3.mySize == 5 );
+	assert( v3.myArray != NULL );
+	for (unsigned i = 0; i < 5; i++) {
+		assert(v3.myArray[i] == (i+1) );
+	}
+	cout << " 7 " << flush;
+	cout << "Passed!" << endl;
+}
+
+void VecTester::testSetSize() const {
+	cout << "Testing setSize()..." << flush;
+	// empty
+	Vec<double>  v0;
+	v0.setSize(3);
+	assert( v0.getSize() == 3 );
+	for (unsigned i = 0; i < 3; i++) {
+		assert( v0.getItem(i) == 0 );
+	}
+	cout << " 0 " << flush;
+	// non-empty, increasing
+	Vec<double>  v1(5);
+	for (unsigned i = 0; i < 5; i++) {
+		v1.setItem(i, i+1);
+	}
+	v1.setSize(8);
+	assert( v1.getSize() == 8 );
+	for (unsigned i = 0; i < 5; i++) {
+		assert( v1.getItem(i) == (i+1) );
+	}
+	for (unsigned i = 5; i < 8; i++) {
+		assert( v1.getItem(i) == 0 );
+	}
+	cout << " 1 " << flush;
+	// non-empty, decreasing
+	Vec<double>  v2(5);
+	for (unsigned i = 0; i < 5; i++) {
+		v2.setItem(i, i+1);
+	}
+	v2.setSize(3);
+	assert( v2.getSize() == 3 );
+	for (unsigned i = 0; i < 3; i++) {
+		assert( v2.getItem(i) == (i+1) );
+	}
+	cout << " 2 " << flush;
+	// non-empty, equal
+	Vec<double>  v3(5);
+	for (unsigned i = 0; i < 5; i++) {
+		v3.setItem(i, i+1);
+	}
+	v3.setSize(5);
+	assert( v3.getSize() == 5 );
+	for (unsigned i = 0; i < 5; i++) {
+		assert( v3.getItem(i) == (i+1) );
+	}
+	cout << " 3 " << flush;
+	// set size to zero
+	v3.setSize(0);
+	assert( v3.getSize() == 0 );
+	assert( v3.myArray == NULL );
+	cout << " 4 " << flush;
+	cout << "Passed!" << endl;
+}
+
+void VecTester::testGetSize() const {
+	cout << "Testing getSize()..." << flush;
+	Vec<double>  v1;
+	assert( v1.getSize() == 0 );
+	cout << " 1 " << flush;
+	Vec<double>  v2(5);
+	assert( v2.getSize() == 5 );
+	cout << " 2 " << flush;
+	cout << "Passed!" << endl;
+}
+
+void VecTester::testSetItem() const {
+	cout << "Testing setItem()... " << flush;
+	// empty case
+	Vec<double>  v0;
+	try {
+		v0.setItem(0, 11);
+		cerr << "setItem() succeeded on empty Vec";
+		exit(1);
+	} catch (range_error&) {
+		cout << " 0 " << flush;
+	}
+	// nonempty case, valid subscript
+	Vec<double>  v(5);
+	for (unsigned i = 0; i < 5; i++) {
+		v.setItem(i, i+1);
+	}
+	for (unsigned i = 0; i < 5; i++) {
+		assert( v.myArray[i] == (i+1) );
+	}
+	cout << " 1 " << flush;
+	// nonempty case, invalid subscript
+	Vec<double>  v2(3);
+	try {
+		v2.setItem(3, 33);
+		cerr << "setItem() succeeded beyond end of Vec";
+		exit(1);
+	} catch (range_error&) {
+		cout << " 2 " << flush;
+	}
+	cout << "Passed!" << endl;
+}
+
+void VecTester::testGetItem() const {
+	cout << "Testing getItem()... " << flush;
+	// empty Vec
+	Vec<double>  v0;
+	try {
+		v0.getItem(0);
+		cerr << "getItem() succeeded on empty Vec";
+		exit(1);
+	} catch (range_error&) {
+		cout << " 0 " << flush;
+	}
+	// non-empty, valid access
+	Vec<double>  v(5);
+	for (unsigned i = 0; i < 5; i++) {
+		v.setItem(i, i+1);
+	}
+	for (unsigned i = 0; i < 5; i++) {
+		assert( v.getItem(i) == (i+1) );
+	}
+	cout << " 1 " << flush;
+	// nonempty Vec, invalid index
+	Vec<double>  v2(3);
+	try {
+		v2.getItem(3);
+		cerr << "getItem() succeeded beyond end of Vec";
+		exit(1);
+	} catch (range_error&) {
+		cout << " 2 " << flush;
+	}
+	cout << "Passed!" << endl;
+}
+
+
+void VecTester::testEquality() const {
+	cout << "Testing ==..." << flush;
+	// empty case
+	Vec<double>  v1;
+	Vec<double>  v2;
+	assert( v1 == v2 );
+	cout << " 1 " << flush;
+	// nonempty, same size, default values
+	Vec<double>  v3(5);
+	Vec<double>  v4(5);
+	assert( v3 == v4 );
+	cout << " 2 " << flush;
+	// nonempty, same size, set values
+	Vec<double>  v5(5);
+	Vec<double>  v6(5);
+	for (unsigned i = 0; i < 5; i++) {
+		v5.setItem(i, i+1);
+		v6.setItem(i, i+1);
+	}
+	assert( v5 == v6 );
+	cout << " 3 " << flush;
+	// empty vs nonempty
+	Vec<double>  v7;
+	Vec<double>  v8(5);
+	assert( !(v7 == v8) );
+	cout << " 4 " << flush;
+	// nonempty, same size, first value different
+	Vec<double>  v9(5);
+	Vec<double>  v10(5);
+	Vec<double>  v11(5);
+	Vec<double>  v12(5);
+	v10.setItem(0, 1);
+	assert( !(v9 == v10) );
+	cout << " 5 " << flush;
+	// nonempty, same size, middle value different
+	v11.setItem(2, 1);
+	assert( !(v9 == v11) );
+	cout << " 6 " << flush;
+	// nonempty, same size, last value different
+	v12.setItem(4, 1);
+	assert( !(v9 == v12) );
+	cout << " 7 " << flush;
+
+	cout << "Passed!" << endl;
+}
+
+void VecTester::testWriteToStream() const {
+      cout << "Testing writeTo(ostream)... " << flush;
+      Vec<double> v1(5);
+      for (unsigned i = 0; i < 5; i++) {
+              v1.setItem(i, i+10);
+      }
+      // write to an ofstream instead of cout, to automate the test
+      ofstream fout("vecStreamOut.txt");
+      assert( fout.is_open() );
+      fout << v1.getSize() << "\n";
+      v1.writeTo(fout);
+      fout.close();
+      // now read in what we just wrote...
+      ifstream fin("vecStreamOut.txt");
+      assert( fin.is_open() );
+      unsigned size;
+      fin >> size;
+      assert( size == 5 );
+      double value;
+      for (unsigned i = 0; i < 5; i++) {
+              fin >> value;
+              assert( value == i+10 );
+      }
+      cout << "Passed! See 'vecStreamOut.txt' for values..." <<
+      endl;
+}
+
+void VecTester::testReadFromStream() const {
+      cout << "Testing readFrom(istream)... " << flush;
+      // an ifstream is-an istream, so use one to automate the test
+      ifstream fin("vecStreamOut.txt");
+      assert( fin.is_open() );
+      // get the size and build the Vec
+      unsigned size;
+      fin >> size;
+      assert( size == 5 );
+      Vec<double> v(size);
+      // test readFrom()
+      v.readFrom(fin);
+      for (unsigned i = 0; i < 5; i++) {
+              assert( v.getItem(i)== i+10 );
+      }
+      fin.close();
+      cout << "Passed!" << endl;
+}
+
+
+void VecTester::testInequality() const {
+	cout << "Testing !=... " << flush;
+
+	// empty
+	Vec<double>  v0;
+	Vec<double>  v1;
+	assert( !(v0 != v1) );
+	cout << " 0 " << flush;
+
+	// empty vs nonempty
+	Vec<double>  v2(3);
+	assert( v1 != v2 );
+	cout << " 1 " << flush;
+
+	// equal sized, same values
+	Vec<double>  v3(3);
+	Vec<double>  v4(3);
+	assert( !(v3 != v4) );
+	cout << " 2 " << flush;
+
+	// equal sized, different values
+	for (unsigned i = 0; i < 3; i++) {
+		v4.myArray[i] = i+1;
+	}
+	assert( v3 != v4 );
+	cout << " 3 " << flush;
+
+	// equal sized, same except first
+	for (unsigned i = 0; i < 3; i++) {
+		v3.myArray[i] = i+1;
+	}
+	v3.myArray[0] = 0;
+	assert( v3 != v4 );
+	cout << " 4 " << flush;
+
+	// equal sized, same except middle
+	v3.myArray[0] = 1;
+	v3.myArray[1] = 0;
+	assert( v3 != v4 );
+	cout << " 5 " << flush;
+
+	// equal sized, same except last
+	v3.myArray[1] = 2;
+ 	v3.myArray[2] = 0;
+	assert( v3 != v4 );
+	cout << " 6 " << flush;
+
+	// equal sized, equal
+	v3.myArray[2] = 3;
+	assert( !(v3 != v4) );
+	cout << " 7 " << flush;
+
+	cout << "Passed!" << endl;
+}
+
+void VecTester::testAddition() const {
+	cout << "Testing +... " << flush;
+	// nonempty
+	Vec<double>  v1(3);
+	Vec<double>  v2(3);
+	v1.setItem(0, 1);
+	v1.setItem(1, 2);
+	v1.setItem(2, 3);
+	v2.setItem(0, 2);
+	v2.setItem(1, 4);
+	v2.setItem(2, 6);
+	Vec<double>  v3 = v1 + v2;
+	assert( v3.getItem(0) == 3 );
+	assert( v3.getItem(1) == 6 );
+	assert( v3.getItem(2) == 9 );
+	cout << " 1 " << flush;
+	// empty
+	Vec<double>  v4, v5;
+	v3 = v4 + v5;
+	assert( v3.getSize() == 0 );
+	assert( v3.myArray == NULL );
+	cout << " 2 " << flush;
+	// different sizes
+	try {
+		v3 = v2 + v4;
+		cerr << "v2 + v4 succeeded for Vecs of different sizes";
+		exit(1);
+	} catch (invalid_argument&) {
+		cout << " 3 " << flush;
+	}
+	cout << "Passed!" << endl;
+}
+
+void VecTester::testSubtraction() const {
+	cout << "Testing -... " << flush;
+	// nonempty
+	Vec<double>  v1(3);
+	Vec<double>  v2(3);
+	v1.setItem(0, 1);
+	v1.setItem(1, 2);
+	v1.setItem(2, 3);
+	v2.setItem(0, 2);
+	v2.setItem(1, 4);
+	v2.setItem(2, 6);
+	Vec<double>  v3 = v1 - v2;
+	assert( v3.getItem(0) == -1 );
+	assert( v3.getItem(1) == -2 );
+	assert( v3.getItem(2) == -3 );
+	cout << " 1 " << flush;
+	// empty
+	Vec<double>  v4, v5;
+	v3 = v4 - v5;
+	assert( v3.getSize() == 0 );
+	assert( v3.myArray == NULL );
+	cout << " 2 " << flush;
+	// different sizes
+	try {
+		v3 = v2 - v4;
+		cerr << "v2 - v4 succeeded for Vecs of different sizes";
+		exit(1);
+	} catch (invalid_argument&) {
+		cout << " 3 " << flush;
+	}
+	cout << "Passed!" << endl;
+}
+
+void VecTester::testDotProduct() const {
+	cout << "Testing *... " << flush;
+	Vec<double>  v1(3);
+	Vec<double>  v2(3);
+	v1.setItem(0, 1);
+	v1.setItem(1, 2);
+	v1.setItem(2, 3);
+	v2.setItem(0, 2);
+	v2.setItem(1, 4);
+	v2.setItem(2, 6);
+	double product = v1 * v2;
+	assert( product == 28 );
+	cout << " 1 " << flush;
+	// empty
+	Vec<double>  v4, v5;
+	product = v4 * v5;
+	assert( product == 0 );
+	cout << " 2 " << flush;
+	// different sizes
+	try {
+		product = v2 * v4;
+		cerr << "v2 * v4 succeeded for Vecs of different sizes";
+		exit(1);
+	} catch (invalid_argument&) {
+		cout << " 3 " << flush;
+	}
+	cout << "Passed!" << endl;
+}
+
+void VecTester::testReadFromFile() const {
+      cout << "Testing readFrom()... " << flush;
+      Vec<double> v1;
+      v1.readFrom("vecTest1.txt");
+      assert( v1.getSize() == 3 );
+      assert( v1.myArray != NULL );
+      assert( v1.getItem(0) == 1 );
+      assert( v1.getItem(1) == 2 );
+      assert( v1.getItem(2) == 3 );
+      cout << " 1 " << flush;
+
+      Vec<double> v2(5);
+      //double* oldAddr = v2.myArray;
+      v2.readFrom("vecTest2.txt");
+      assert( v2.getSize() == 4 );
+      cout << " 2 " << flush;
+      assert( v2.myArray != NULL );
+      assert( v2.getItem(0) == 2 );
+      assert( v2.getItem(1) == 4 );
+      assert( v2.getItem(2) == 6 );
+      assert( v2.getItem(3) == 8 );
+       /* the following assertion assumes that the new array's base
+        *  address is different from the old array's base address,
+        *  which may not be true. If your method seems to be right,
+        *  is correctly using delete to deallocate the old array,
+        *  and passes all assertions except this one, you may
+        *  comment out this assertion.
+        */
+      //assert( v2.myArray != oldAddr );
+      cout << " 3 " << flush;
+      cout << "Passed! Make sure your method closed the file..." << endl;
+}
+
+void VecTester::testWriteToFile() const {
+      cout << "Testing writeTo()... " << flush;
+      // read a vector we know into an empty Vec...
+      Vec<double> v1;
+      v1.readFrom("vecTest1.txt");
+      // make a copy of it in a different file
+      v1.writeTo("vecTest1Copy.txt");
+      cout << " 1 " << flush;
+      cout << "vecTest1Copy.txt created " << flush;
+      // read in the copy, and check it
+      Vec<double> v3;
+      v3.readFrom("vecTest1Copy.txt");
+      assert( v3.getSize() == 3 );
+      assert( v3.myArray != NULL );
+      assert( v3.getItem(0) == 1 );
+      assert( v3.getItem(1) == 2 );
+      assert( v3.getItem(2) == 3 );
+      cout << " 2 " << flush;
+
+      // read a vector we know into a nonempty Vec...
+      Vec<double> v2(5);
+      v2.readFrom("vecTest2.txt");
+      // make a copy of it in a different file
+      v2.writeTo("vecTest2Copy.txt");
+      cout << " 3 " << flush;
+      cout << "vecTest2Copy.txt created " << flush;
+      // read in the copy and check it
+      v3.readFrom("vecTest2Copy.txt");
+      assert( v3.getSize() == 4 );
+      assert( v3.myArray != NULL );
+      assert( v3.getItem(0) == 2 );
+      assert( v3.getItem(1) == 4 );
+      assert( v3.getItem(2) == 6 );
+      assert( v3.getItem(3) == 8 );
+      cout << " 4 " << flush;
+      cout << "Passed!  Make sure you closed the file..." << endl;
+}
+
+jrp27@leibniz:~/CS112/Proj04$ v cat VecTester.h
+/* VecTester.h provides unit tests for Vec, a simple vector class.
+ * Student Name: Jason Pruim
+ * Date: Sept 26, 2017
+ * Begun by: Joel C. Adams, for CS 112 at Calvin College.
+ */
+ 
+#ifndef VECTESTER_H_
+#define VECTESTER_H_
+
+#include "Vec.h"
+
+class VecTester {
+public:
+	void runTests() const;
+	void testDefaultConstructor() const;
+	void testExplicitConstructor() const;
+	void testDestructor() const;
+	void testGetSize() const;
+	void testSetItem() const;
+	void testGetItem() const;
+	void testSetSize() const;
+	void testCopyConstructor() const;
+	void testAssignment() const;
+	void testEquality() const;
+	void testWriteToStream() const;
+	void testReadFromStream() const;
+	void testSubscript() const;
+	void testInequality() const;
+	void testAddition() const;
+	void testSubtraction() const;
+	void testDotProduct() const;
+	void testWriteToFile() const;
+	void testReadFromFile() const;
+	//void testReadSubscript(const Vec& v) const;
+
+};
+
+#endif /*VECTESTER_H_*/
+jrp27@leibniz:~/CS112/Proj04$ cat DifDim.txt
+3 3
+1 -2 3
+5 -6 7
+9 -10 11jrp27@leibniz:~/CS112/Proj04$ cat Mat1.txt
+3 4
+1 -2 3 -4
+5 -6 7 -8
+9 -10 11 -12jrp27@leibniz:~/CS112/Proj04$ cat mat2.txt
+cat: mat2.txt: No such file or directory
+jrp27@leibniz:~/CS112/Proj04$ cat Mat2.txt
+3 4
+1 2 3 4
+4 3 2 1
+0 1 1 0jrp27@leibniz:~/CS112/Proj04$ cat MatrixTest1.txt 
+3 4
+1 2 3 4
+5 6 7 8
+9 10 11 12
+
+jrp27@leibniz:~/CS112/Proj04$ cat Mati rixTest1Copy.txt
+3 4
+1	2	3	4
+5	6	7	8
+9	10	11	12
+jrp27@leibniz:~/CS112/Proj04$ cat MatrixTest1copy2.t       Copy2.txt
+3
+4
+1	2	3	4
+5	6	7	8
+9	10	11	12
+jrp27@leibniz:~/CS112/Proj04$ cat vecStreamOUt  ui t.txt
+5
+10
+11
+12
+13
+14
+jrp27@leibniz:~/CS112/Proj04$ vecTest1.txt
+bash: vecTest1.txt: command not found
+jrp27@leibniz:~/CS112/Proj04$ cat vecTest1.txt 
+3
+1
+2
+3
+
+jrp27@leibniz:~/CS112/Proj04$ cat vecTest1c Copy.txt 
+3
+1
+2
+3
+jrp27@leibniz:~/CS112/Proj04$ cat vecTest2.txt 
+4
+2
+4
+6
+8
+
+jrp27@leibniz:~/CS112/Proj04$ catV  V vect Test2Copy.txt 
+4
+2
+4
+6
+8
+jrp27@leibniz:~/CS112/Proj04$ cd D
+Debug/      DifDim.txt  
+jrp27@leibniz:~/CS112/Proj04$ cd D
+Debug/      DifDim.txt  
+jrp27@leibniz:~/CS112/Proj04$ cd Debug/
+jrp27@leibniz:~/CS112/Proj04/Debug$ ls
+Application.d  Matrix.o        Proj04	   tester.o	VecTester.o
+Application.o  MatrixTester.d  sources.mk  Vec.d
+makefile       MatrixTester.o  subdir.mk   Vec.o
+Matrix.d       objects.mk      tester.d    VecTester.d
+jrp27@leibniz:~/CS112/Proj04/Debug$ make all
+make: Nothing to be done for 'all'.
+jrp27@leibniz:~/CS112/Proj04/Debug$ cd ..
+jrp27@leibniz:~/CS112/Proj04$ ./Debug/Proj04
+Running Matrix tests...
+Testing default constructor... 0  1 Passed!
+Testing explicit constructor... 1  2 Passed!
+Testing copy constructor...  1  2  Passed!
+Testing =...  0  1  2  3  4  5 Passed!
+Testing ==...  1  2  3  4 Passed!
+Testing subscripts...  1  2  3  4  5  6 Passed!
+Testing !=...  0  1  2  3 Passed!
+Testing getTranspose()...  0  1a  1b Passed!
+Testing +...  0  1a  1b  2  3 Passed!
+Testing -...  0  1a  1b  2  3 Passed!
+Testing readFrom(istream)... Passed!
+Testing writeTo(ostream)... Passed!
+Testing readFrom(string)... Passed!
+Testing writeTo(string)... Passed!
+All tests passed!
+
+
+
+
+
+
+
+
+
+
+
+Welcome to Matrix Operations!
+Do you wish to:
+	 1: add Matrices
+	 2: subtract Matrices
+	 3: transpose a Matrix
+	 q: quit Matrix Operations
+1
+What file is your first Matrix in?
+Mat1.txt
+What file is your second Matrix in?
+Mat2.txt
+Your sum is:
+2	0	6	0
+9	-3	9	-7
+9	-9	12	-12
+type anything to return to Menu
+hello    ne   next
+Do you wish to:
+	 1: add Matrices
+	 2: subtract Matrices
+	 3: transpose a Matrix
+	 q: quit Matrix Operations
+2
+What file is your first Matrix in?
+Mat1.txt
+What file is your second Matrix in?
+Mat2.txt
+Your Difference is:
+0	-4	0	-8
+1	-9	5	-9
+9	-11	10	-12
+type anything to return to Menu
+next
+Do you wish to:
+	 1: add Matrices
+	 2: subtract Matrices
+	 3: transpose a Matrix
+	 q: quit Matrix Operations
+1
+What file is your first Matrix in?
+DifDim.txt
+What file is your second Matrix in?
+Mat1.txt
+Different sized Matrices
+Do you wish to:
+	 1: add Matrices
+	 2: subtract Matrices
+	 3: transpose a Matrix
+	 q: quit Matrix Operations
+3
+What file is your Matrix in?
+Mat1.txt
+Your transposed Matrix is:
+1	5	9
+-2	-6	-10
+3	7	11
+-4	-8	-12
+type anything to return to Menu
+next
+Do you wish to:
+	 1: add Matrices
+	 2: subtract Matrices
+	 3: transpose a Matrix
+	 q: quit Matrix Operations
+3
+What file is your Matrix in?
+DifDim.txt
+Your transposed Matrix is:
+1	5	9
+-2	-6	-10
+3	7	11
+type anything to return to Menu
+why?    lkjsd
+Do you wish to:
+	 1: add Matrices
+	 2: subtract Matrices
+	 3: transpose a Matrix
+	 q: quit Matrix Operations
+why???
+Invalid response
+Do you wish to:
+	 1: add Matrices
+	 2: subtract Matrices
+	 3: transpose a Matrix
+	 q: quit Matrix Operations
+Invalid response
+Do you wish to:
+	 1: add Matrices
+	 2: subtract Matrices
+	 3: transpose a Matrix
+	 q: quit Matrix Operations
+Invalid response
+Do you wish to:
+	 1: add Matrices
+	 2: subtract Matrices
+	 3: transpose a Matrix
+	 q: quit Matrix Operations
+Invalid response
+Do you wish to:
+	 1: add Matrices
+	 2: subtract Matrices
+	 3: transpose a Matrix
+	 q: quit Matrix Operations
+Invalid response
+Do you wish to:
+	 1: add Matrices
+	 2: subtract Matrices
+	 3: transpose a Matrix
+	 q: quit Matrix Operations
+Invalid response
+Do you wish to:
+	 1: add Matrices
+	 2: subtract Matrices
+	 3: transpose a Matrix
+	 q: quit Matrix Operations
+1
+What file is your first Matrix in?
+hello  .there
+Invalid file, did you include .txt?
+Do you wish to:
+	 1: add Matrices
+	 2: subtract Matrices
+	 3: transpose a Matrix
+	 q: quit Matrix Operations
+1
+What file is your first Matrix in?
+hello.txt
+Invalid file, did you include .txt?
+Do you wish to:
+	 1: add Matrices
+	 2: subtract Matrices
+	 3: transpose a Matrix
+	 q: quit Matrix Operations
+q
+Thanks for using Matrix Operations
+jrp27@leibniz:~/CS112/Proj04$ exit
+
+Script done on Mon 09 Oct 2017 07:45:13 PM EDT
